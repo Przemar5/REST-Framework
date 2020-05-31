@@ -1,0 +1,24 @@
+{
+	"logic": {
+		"table": {
+			"validators": {
+				"myMin": {
+					"args": [2],
+					"msg": "Input must be at least 2 characters long."
+				},
+				"regex": {
+					"args": ["/^[0-9a-zA-Z_\\-]+$/"],
+					"msg": "Input 2 contains invalid characters."
+				}
+			}
+		},
+		"value": {
+			"validators": {
+				"regex": {
+					"args": ["/^[0-9]*$/"],
+					"msg": "Input contains invalid characters."
+				}
+			}
+		}
+	}
+}
