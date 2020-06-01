@@ -4,145 +4,125 @@
 declare(strict_types = 1);
 define('ROOT', __DIR__);
 
-
-//function reduce(array $args, $accum = true)
-//{
-//	if (count($args) === 0)
-//		return $accum;
-//	
-//	else 
-//		return reduce(array_slice($args, 1), {$args[0]}($accum))
-//}
-//
-//function both($a, $b)
-//{
-//	return $a && $b;
-//}
-
-function trueOrThrow($value, string $msg)
-{
-	if ($value)
-		return true;
-	else
-		throw new \Exception($msg);
-}
-
-
-function myMin(string $value, int $min)
-{
-	return strlen($value) >= $min;
-}
-
-function regex(string $value, string $pattern) 
-{
-	return preg_match($pattern, $value);
-}
-
-function first(string $part) 
-{
-	echo 1;
-}
-
-function second(string $part) 
-{
-	echo 2;
-}
-
 require_once 'config/config.php';
-require_once 'libs/helpers.php';
-//require_once 'functions.php';
 
 
-$parts = ['table', 'value'];
-$handlers = ['first', 'second'];
-$uri = $_SERVER['PATH_INFO'];
+// If there is no request, end script execution
+if (!$uri = $_SERVER['PATH_INFO'])
+	die;
+
+// URI parts
 $uri = array_slice(explode('/', $uri), 1);
-$functions = [];
+
+// requested parts
+$requestedParts = ['table', 'index'];
+
+// Indexes of functions to call
 $indexes = [];
 
+// Get request method
+switch ($_SERVER['REQUEST_METHOD']) {
+		
+	case 'GET': 	$method = $_GET; 		break;
+	case 'POST': 	$method = $_POST; 		break;
+	case 'PUT': 	$method = $_PUT; 		break;
+	case 'DELETE': 	$method = $_DELETE; 	break;
+	default: 		$method = $_POST;		break;
+}
 
+// Get indexes of requested parts
 switch (count($uri)) {
+		
 	case 1:
 		$indexes = [0];
 		break;
-		
+
 	case 2:
 		$indexes = [0, 1];
 		break;
 }
 
-echo '<pre>';
+// Get config file
+//echo '<pre>';
 $config = file_get_contents(ROOT . DS . 'config' . DS . 'config.json');
-$data = json_decode($config);
-//var_dump($data);
-//die;
+$data = json_decode($config, false);
+//var_dump($data);die;
 
+// Extract regexes
+$regexes = $data->regex;
+
+// Apply regexes to requested values and end script if any doesn't match
 foreach ($indexes as $index) {
-	$currentData = $data->logic->{ $parts[ $index ] };
-	$validators = $currentData->validators;
 	
-	try {
-		foreach ($validators as $validator => $args) {
+	$propertyPattern = $regexes->{ $requestedParts[$index] };
+
+	if (!preg_match($propertyPattern, $uri[$index]))
+		die;
+}
+
+// Extract specific data
+$dbType		= 	$method['dbtype'] 		?? 	DB_TYPE;
+$dbHost		= 	$method['dbhost'] 		?? 	DB_HOST;
+$dbName		= 	$method['dbname'] 		?? 	DB_NAME;
+$dbCharset	= 	$method['dbcharset'] 	?? 	DB_CHARSET;
+$dbUser 	= 	$method['dbuser'] 		?? 	DB_USERNAME;
+$dbPassword = 	$method['dbpassword'] 	?? 	DB_PASSWORD;
+
+// Query parts
+$values		= 	$method['values'];
+$where		= 	$method['where'];
+$limit		= 	$method['limit'];
+
+// Process 'values' request part
+if ($values !== null) {
+	
+	$valuesPattern = $regexes->values;
+
+	foreach ($values as $value) {
+		
+		if (!preg_match($valuesPattern, $value)) {
 			
-			if (!call_user_func_array($validator, 
-				array_merge([$uri[$index]], $args->args))) {
-				
-				throw new \Exception($args->msg);
-			}
+			die('values');
 		}
 	}
-	catch (\Exception $e) {
-		die($e->getMessage());
+}
+
+// Process 'where' request part
+if ($where !== null) {
+	
+	$whereParamPattern = $regexes->where->key;
+	$whereValuePattern = $regexes->where->value;
+	
+	foreach ($where as $key => $value) {
+		
+		if (!preg_match($whereParamPattern, $key) ||
+			!preg_match($whereValuePattern, $value)) {
+			
+			die('where');
+		}
 	}
 }
 
-switch ($_SERVER['REQUEST_METHOD']) {
-	case 'GET': 
-		$method = $_GET; 
-		break;
-	case 'POST': 
-		$method = $_POST; 
-		break;
-	case 'PUT': 
-		$method = $_PUT; 
-		break;
-	case 'DELETE': 
-		$method = $_DELETE; 
-		break;
+// Process 'limit' request part
+if ($limit !== null) {
+	
+	if (!preg_match('/^[0-9]+$/', $limit)) {
+		
+		die;
+	}
 }
 
 
 
-$dbType		= $method['dbtype'] ?? DB_TYPE;
-$dbHost		= $method['host'] ?? DB_HOST;
-$dbName		= $method['dbname'] ?? DB_NAME;
-$dbCharset	= $method['dbcharset'] ?? DB_CHARSET;
-$user 		= $method['user'] ?? DB_USERNAME;
-$password 	= $method['password'] ?? DB_PASSWORD;
 
-$values		= $method['values'];
-$where		= $method['where'];
-$limit		= $method['limit'];
-
-//if ($values) $values = explode(',', $values);
-
-$where = explode(',', substr($_GET['where'], 1, strlen($_GET['where']) - 2));
-$where = array_reduce($where, function($result, $item) {
-	[$a, $b] = explode('=', $item);
-	$result[$a] = $b;
-	return $result;
-}, []);
-
-
-//var_dump($where); die;
-
+// Establish connection
 $dsn = $dbType . 
 	':host=' . $dbHost . 
 	';dbname=' . $dbName . 
 	';charset=' . $dbCharset;
 
 try {
-	$db = new PDO($dsn, $user, $password);
+	$db = new PDO($dsn, $dbUser, $dbPassword);
 }
 catch (\PDOException $e)
 {
@@ -150,19 +130,73 @@ catch (\PDOException $e)
 }
 
 
-foreach ($where as $key => $value) {
-	$conditions = $key . ' = :' . $key . ' AND ';
+
+// Build query
+switch ($method) {
+	case 'GET': 	select();	break;
+	case 'POST': 	insert();	break;
+	case 'PUT': 	update();	break;
+	case 'DELETE': 	delete();	break;
+	default: 		select();	break;
 }
-$conditions = preg_replace('/ AND $/', '', $conditions);
 
-$query = 'SELECT ' . ($values ?? '*') . ' FROM ' . $uri[0] . ' WHERE ' . $conditions;
-var_dump($query);die;
-$stmt = $db->prepare($query);
-$stmt->bindParam(':id', $uri[1]);
-$stmt->execute();
 
-echo '<br>';
-echo '<pre>';
-var_dump($stmt->fetch(PDO::FETCH_ASSOC));
+function select() {
+	// Values to bind later
+	$bind = [];
+
+	// Query parts
+	$valuesPart = '*';
+	$conditionsPart = '';
+	$limitPart = '';
+
+
+	// Prepare 'values' query part
+	if ($values !== null && count($values)) {
+		$valuesPart = implode(', ', $values);
+	}
+
+	// Prepare 'where' query part
+	if ($where !== null) {
+		$conditionsPart = ' WHERE ';
+
+		if ($uri[1] !== null) {
+			$conditionsPart = 'id = :id';
+			$bind[":id"] = $uri[1];
+		}
+
+		foreach ($where as $key => $value) {
+			$conditionsPart .= $key . ' = :' . $key . ' AND ';
+			$bind[":$key"] = $value;
+		}
+
+		$conditionsPart = preg_replace('/ AND $/', '', $conditionsPart);
+	}
+
+	// Prepare 'limit' query part
+	if ($limit !== null) {
+		$limitPart = ' LIMIT ' . $limit;
+	}
+
+
+	// Finalize query
+
+
+	$query = $action . $valuesPart . ' FROM ' . $uri[0] . $conditionsPart . $limitPart;
+	$stmt = $db->prepare($query);
+	$stmt->bindParam(':id', $uri[1]);
+
+	foreach ($bind as $key => $value) {
+		$stmt->bindParam($key, $value);
+	}
+	$stmt->execute();
+
+	ob_clean();
+	// Get results
+	$result = $stmt->fetch(PDO::FETCH_ASSOC);
+	if ($result)
+		echo json_encode($result);
+
+}
 
 

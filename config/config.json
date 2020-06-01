@@ -1,24 +1,18 @@
 {
-	"logic": {
-		"table": {
-			"validators": {
-				"myMin": {
-					"args": [2],
-					"msg": "Input must be at least 2 characters long."
-				},
-				"regex": {
-					"args": ["/^[0-9a-zA-Z_\\-]+$/"],
-					"msg": "Input 2 contains invalid characters."
-				}
-			}
+	"regex": {
+		"table": "/^[0-9a-zA-Z_]+([0-9a-zA-Z_\\-\\.]*[0-9a-zA-Z_\\-])*$/",
+		"index": "/^[0-9a-zA-Z_]+([0-9a-zA-Z_\\-\\.]*[0-9a-zA-Z_\\-])*$/",
+		
+		"values": "/^[0-9a-zA-Z_]+([0-9a-zA-Z_\\-\\.]*[0-9a-zA-Z_\\-])*$/",
+		"where": {
+			"key": "/^[0-9a-zA-Z_]+([0-9a-zA-Z_\\-\\.]*[0-9a-zA-Z_\\-])*$/",
+			"value": "/^[0-9a-zA-Z_]+([0-9a-zA-Z_\\-\\.]*[0-9a-zA-Z_\\-])*$/"
 		},
-		"value": {
-			"validators": {
-				"regex": {
-					"args": ["/^[0-9]*$/"],
-					"msg": "Input contains invalid characters."
-				}
-			}
-		}
+		
+		"dbtype": "/^(mysql)$/",
+		"dbhost": "/^(?=.{1,255}$)[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?(?:\\.[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?)*\\.?$/",
+		"dbuser": "/^\\w$/",
+		"dbpass": "/^[0-9\\w]*$/",
+		"dbname": "/^[0-9a-zA-Z_]+([0-9a-zA-Z_\\-\\.]*[0-9a-zA-Z_\\-])*$/"
 	}
 }
