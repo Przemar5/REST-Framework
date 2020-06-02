@@ -1,13 +1,82 @@
 {
+	
+	"query": {
+		"default": {
+			"table": {
+				"required": false,
+				"regex": "/^[0-9a-zA-Z_]+([0-9a-zA-Z_\\-\\.]*[0-9a-zA-Z_\\-]*)*$/"
+			},
+			"index": {
+				"required": false,
+				"regex": "/^([0-9a-zA-Z_]+([0-9a-zA-Z_\\-\\.]*[0-9a-zA-Z_\\-]*)*)?$/"
+			},
+			"dbtype": {
+				"required": false,
+				"default": "mysql",
+				"regex": "/^(mysql)$/"
+			},
+			"dbhost": {
+				"required": false,
+				"default": "127.0.0.1",
+				"regex": "/^(?=.{1,255}$)[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?(?:\\.[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?)*\\.?$/"
+			},
+			"dbuser": {
+				"required": false,
+				"default": "root",
+				"regex": "/^\\w$/"
+			},
+			"dbpass": {
+				"required": false,
+				"default": "",
+				"regex": "/^[0-9\\w]*$/"
+			},
+			"dbname": {
+				"required": false,
+				"default": "rest_test",
+				"regex": "/^[0-9a-zA-Z_]+([0-9a-zA-Z_\\-\\.]*[0-9a-zA-Z_\\-])*$/"
+			},
+			"dbcharset": {
+				"required": false,
+				"default": "utf8",
+				"regex": "/^(utf8)$/"
+			}
+		},
+		"select": {
+			"values": {
+				"required": false,
+				"default": "*",
+				"regex": {
+					"value": "/^[0-9a-zA-Z_]+([0-9a-zA-Z_\\-\\.]*[0-9a-zA-Z_\\-])*$/"
+				}
+			},
+			"where": {
+				"required": false,
+				"regex": {
+					"key": "/^[0-9a-zA-Z_]+([0-9a-zA-Z_\\-\\.]*[0-9a-zA-Z_\\-])*$/",
+					"value": "/^[0-9a-zA-Z_]+([0-9a-zA-Z_\\-\\.]*[0-9a-zA-Z_\\-])*$/"
+				}
+			},
+			"limit": {
+				"required": false,
+				"regex": "/^\\d+$/"
+			}
+		},
+		"insert": {
+			"*": {
+				"required": false
+			}
+		}
+	},
 	"regex": {
-		"table": "/^[0-9a-zA-Z_]+([0-9a-zA-Z_\\-\\.]*[0-9a-zA-Z_\\-])*$/",
-		"index": "/^[0-9a-zA-Z_]+([0-9a-zA-Z_\\-\\.]*[0-9a-zA-Z_\\-])*$/",
+		"table": "/^[0-9a-zA-Z_]+([0-9a-zA-Z_\\-\\.]*[0-9a-zA-Z_\\-]*)*$/",
+		"index": "/^([0-9a-zA-Z_]+([0-9a-zA-Z_\\-\\.]*[0-9a-zA-Z_\\-]*)*)?$/",
 		
 		"values": "/^[0-9a-zA-Z_]+([0-9a-zA-Z_\\-\\.]*[0-9a-zA-Z_\\-])*$/",
 		"where": {
 			"key": "/^[0-9a-zA-Z_]+([0-9a-zA-Z_\\-\\.]*[0-9a-zA-Z_\\-])*$/",
 			"value": "/^[0-9a-zA-Z_]+([0-9a-zA-Z_\\-\\.]*[0-9a-zA-Z_\\-])*$/"
 		},
+		"limit": "/^\\d+$/",
 		
 		"dbtype": "/^(mysql)$/",
 		"dbhost": "/^(?=.{1,255}$)[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?(?:\\.[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?)*\\.?$/",
