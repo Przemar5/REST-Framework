@@ -98,7 +98,8 @@ foreach ($valuesToCheck as $param => [$required, $default]) {
 
 // Establish connection
 $dsn = $dbtype . 
-	':host=' . $dbhost . 
+	':host=' . $dbhost .
+    ';port=' . $dbport .
 	';dbname=' . $dbname . 
 	';charset=' . $dbcharset;
 
